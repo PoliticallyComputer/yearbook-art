@@ -1,14 +1,13 @@
 var table;
-var maxSalesInDay = 10;
-var ellipseSize = 30;
-var spacing = 100;
+var maxSalesInDay = 176;
+var spacing = 130;
 var columnsPerMonth = 7;
-var monthWidth = columnsPerMonth * (spacing + ellipseSize);
+var monthWidth = columnsPerMonth * (spacing);
 var monthHeight;
 
 function preload()
 {
-    table = loadTable ('data/sales.csv', 'csv', 'header');
+    table = loadTable ('data/sales_updated.csv', 'csv', 'header');
 }
 
 // this function is called once at the beginning
@@ -17,29 +16,32 @@ function setup()
     // feel free to change the size
     createCanvas (2000, 3500, SVG);
     frameRate (60);
-    background (255);
+    // background (255);
     noStroke();
 
-    monthHeight = ceil (31 / columnsPerMonth) * (spacing + ellipseSize);
+    monthHeight = ceil (31 / columnsPerMonth) * (spacing);
 
     // we access the month by its number
-    var months = {9: new Month ("September", 31, ['51', 'E5', 'FF']), 10: new Month ("October", 30, ['E4', '09', '7C']), //['12', '99', 'D6']
+    var months = {9: new Month ("September", 31, ['3A', 'FF', 'AD']), 10: new Month ("October", 30, ['E4', '09', '7C']), //['51', 'E5', 'FF']
                   11: new Month ("November", 31, ['FB', 'ED', '00']), 12: new Month ("December", 30, ['8C', '07','F2']),
                   1: new Month ("January", 31, ['0C', 'CE', '6B']),   2: new Month ("February", 28, ['FF', '92', '00']),
-                  3: new Month ("March", 31, ['3A', 'FF', 'AD']),     4: new Month ("April", 30, ['ED', '1C', '24'])};
+                  3: new Month ("March", 31, ['12', '99', 'D6']),     4: new Month ("April", 30, ['ED', '1C', '24'])};
 
     var rows = table.getRows();
 
     // transfer sales data to months collection
     rows.forEach ((row) =>
     {
-        var monthNum, date, time, qty;
-        monthNum = int (row.get ("Date").substring (0, 2));
-        date = row.get ("Date");
-        time = row.get ("Time");
-        qty = int (row.get ("Qty"));
+        if (true)//row.get ("Item") === "Ice Cream Sandwich")
+        {
+            var monthNum, date, time, qty;
+            monthNum = int (row.get ("Date").substring (0, 2));
+            date = row.get ("Date");
+            time = row.get ("Time");
+            qty = int (row.get ("Qty"));
 
-        months[monthNum].addSale (date, time, qty);
+            months[monthNum].addSale (date, time, qty);
+        }
     });
 
     var h = 0;
@@ -49,7 +51,6 @@ function setup()
     {
         for (var j = 0; j < 2; ++j)
         {
-            // months[i].fillBuffer();
             months[i].draw (j * monthWidth, h * monthHeight);
             ++i;
 
@@ -99,8 +100,9 @@ class Month
 
     draw (top, left)
     {
-        // console.log("================================" + this.whichMonth);
+        console.log("================================" + this.whichMonth + " | " + this.sales.length);
         var rowNum = 0;
+        // var maxSales = 0;
 
         var i = 0;
         while (i < this.numDays)
@@ -108,12 +110,18 @@ class Month
             for (var j = 0; j < columnsPerMonth; ++j)
             {
                 var numSalesInDay = this.getNumSalesInDay (i + 1);
-                fill (this.rgb[0], this.rgb[1], this.rgb[2], map (numSalesInDay, 0, maxSalesInDay, 0, 255));
-                ellipse (top + (ellipseSize + spacing) / 2 + j * (spacing + ellipseSize),
-                         left + (ellipseSize + spacing) / 2 + rowNum * (spacing + ellipseSize),
-                         map (numSalesInDay, 0, maxSalesInDay, ellipseSize, ellipseSize * 2));
+                fill (this.rgb[0], this.rgb[1], this.rgb[2], map (numSalesInDay, 0, maxSalesInDay, 150, 255));
 
-                // console.log(numSalesInDay);
+                var diameter = 8;
+                if (numSalesInDay != 0)
+                    diameter = map (numSalesInDay, 0, maxSalesInDay, 20, 120);
+
+                ellipse (top + (spacing / 2) + (j * spacing),
+                         left + (spacing / 2) + (rowNum * spacing),
+                         diameter);
+
+                // maxSales = max (maxSales, numSalesInDay);
+                console.log(numSalesInDay);
                 ++i;
 
                 if (i >= this.numDays)
@@ -122,6 +130,8 @@ class Month
 
             ++rowNum;
         }
+
+        // console.log ("Max Sale:" + maxSales);
     }
 
     addSale (date, time, qty)
